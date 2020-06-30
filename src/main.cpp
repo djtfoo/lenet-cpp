@@ -5,14 +5,14 @@
 #include <string.h>
 #include <string>
 #include <vector>
-#include <time.h>
+//#include <time.h>
+#include <chrono>
 
 #include "map.h"
 #include "imagemap.h"
 #include "kernel.h"
 #include "lenet5.h"
 #include "fcparams.h"
-
 
 #define IN_LEN  32  // (28x28 with padding)
 #define C1_LEN  28
@@ -59,7 +59,7 @@ void run_lenet5_dataset() {
 
     // instantiate images dataset
     std::vector<ImageMap*> images;  // vector of 32x32 images
-    read_dataset(images, "test_dataset.csv");   // read dataset
+    read_dataset(images, "./dataset/test_dataset.csv");   // read dataset
 
     // instantiate Lenet-5 neural network
     Lenet5 lenet5;
@@ -68,23 +68,28 @@ void run_lenet5_dataset() {
     for (int i = 0; i < images.size(); ++i) {
 
         // print image
-        printf("Image:\n");
-        images[i]->print();
+        //printf("Image:\n");
+        //images[i]->print();
         printf("\n");
 
         // START COUNTING TIME
-        clock_t begin = clock();
+        //clock_t begin = clock();
+        auto start = std::chrono::high_resolution_clock::now();
+        std::ios_base::sync_with_stdio(false);
 
         // run inference
         int digit = lenet5.run_inference(images[i]);
 
         // STOP COUNTING TIME
-        clock_t end = clock();
-        double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+        //clock_t end = clock();
+        //double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+        auto end = std::chrono::high_resolution_clock::now();
+        double time_taken = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+        time_taken *= 1e-9; // convert to seconds
 
         // Print results
         printf("Predicted Digit: %d\n\n", digit);
-        printf("time_spent: %.4f seconds\n", time_spent);
+        printf("time_spent: %.8f seconds\n", time_taken);
     }
 
     // delete images after running
@@ -96,7 +101,7 @@ void run_lenet5_dataset() {
 void run_test_lenet5() {
 
     ImageMap image(IN_LEN);
-    char filename[] = "./test_img.txt";
+    char filename[] = "./dataset/test_img.txt";
     if (!load_image(&image, filename))
     {
         printf("Failed to load image\n");
